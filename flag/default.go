@@ -18,7 +18,7 @@ type defaultFlags struct {
 	flags map[string]string
 }
 
-func (f *defaultFlags) parse(cmd []string) ([]string, error) {
+func (f *defaultFlags) Parse(cmd []string) ([]string, error) {
 	for k, v := range cmd {
 		prefix, body := sepToPrefixAndBody(v, (*f).prefix)
 		if prefix != (*f).prefix {
