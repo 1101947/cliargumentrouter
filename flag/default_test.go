@@ -4,78 +4,83 @@ import (
 	"testing"
 )
 
-func compareDefaultFlagsStruct(f, s defaultFlags) bool {
-	if f.prefix != s.prefix {
+type testCase struct {
+	name string
+	given
+	expected
+}
+
+// No alarms and
+func (t testCase) NoSurprises() bool {
+	resultCmd, resultErr := t.given.dF.Parse(t.given.cmd)
+	if resultErr != t.expected.err {
 		return false
 	}
-	if f.nameValueSeparator != s.nameValueSeparator {
+	if !compareCmd(resultCmd, t.expected.cmd) {
 		return false
 	}
-	if len(f.flags) != len(s.flags) {
+	if !(*t.given.dF).isEqualTo(*t.expected.dF) {
 		return false
 	}
-	for k,vF := range(f.flags) {
-		vS, ok := s.flags[k]
-		if !ok {
-			return false
-		}
-		if vS != vF {
+	return true
+} 
+
+type given struct {
+	cmd []string
+	dF *defaultFlags
+}
+
+type expected struct {
+	cmd []string
+	dF *defaultFlags
+	err error
+}
+
+func compareCmd(cmd1, cmd2 []string) bool {
+	if len(cmd1) != len(cmd2) {
+		return false
+	}
+	for i:=0;i<len(cmd1);i++ {
+		if cmd1[i] != cmd2[i] {
 			return false
 		}
 	}
 	return true
 }
 
-func TEst_DefaultFlagsParse(t *testing.T) {
-	type given struct{
-		dF *defaultFlags
-		cmd []string
-	}
-	type expected struct{
-		dF defaultFlags
-		cmd []string
-		err error
-	}
-	type testCase struct{
-		name string
-		given
-		expected
-	}
-	// TODO: add testcase where several identical flags present: progname --flag=value --flag=value --flag=value
-
-	testCases := []testCase{
-		{
-			name: "default", 
-			given: given{
-				dF: &defaultFlags{
-					prefix: "--", nameValueSeparator: "=", flags: map[string]string{},
-				},
-				cmd: []string{"--flag1", "--flag2=value2", "--flag3==sd"},
-			},
-			expected: expected{
-				dF: defaultFlags{
-					prefix: "--", nameValueSeparator: "=", flags: map[string]string{"flag1": "", "flag2": "value2", "flag3": "sd"},
-				},
-				cmd: []string{""},
-				err: nil,
-			},
-		},
-	}
-
+func Test_DefaultFlagsParse(t *testing.T) {
+	testCases := getTestCases()
 	for _, v := range(testCases) {
 		t.Run(v.name, func(t *testing.T) {
-			rCmd, rErr := (v.given.dF).parse(v.given.cmd)
-			for k,val := range(rCmd) {
-				if val != v.expected.cmd[k] {
-					t.Errorf("expected: %s, got: %s", v.expected.cmd[k], val)
-				}
-			}
-			if rErr != v.expected.err {
-				t.Errorf("expected: %v, got: %v", v.expected.err, rErr)
-			}
-			if compareDefaultFlagsStruct(*v.given.dF, v.expected.dF) {
-				t.Errorf("expected %v, got: %v", v.expected.dF, *v.given.dF)
+			if !v.NoSurprises() {
+				t.Errorf("expected: %+v, \n got : %+v ", *v.expected.dF, (*(v.given.dF)))
 			}
 		})
+	}
+}
+
+func getTestCases() []testCase {
+	ddf := GetDefaultFlags()
+	return  []testCase{
+		testCase{
+			name: "first",
+			given: given{
+				cmd: []string{"--flag1=7", "--flag3=value", "--flag2=value2", "--flag3=sd"},
+				dF: &ddf,
+			},
+			expected: expected{
+				cmd: []string{},
+				dF: &defaultFlags{
+					prefix: "--", nameValueSeparator: "=", kwargs: kwargs{
+						"flag1": []pair{pair{value: "7", position: 0},},
+						"flag3": []pair{pair{value: "value", position: 1},pair{value: "sd", position: 3},},
+
+						"flag2": []pair{pair{value: "value2", position: 2},},
+					},
+				},
+				err: nil,
+			},
+
+		},
 	}
 }

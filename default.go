@@ -1,10 +1,12 @@
-package cmdrouter
+package cliargumentrouter 
 
 import (
-	"strings"
+	"log"
 	"fmt"
+	"strings"
+	"github.com/1101947/cliargumentrouter/cmdrouter"
+	"github.com/1101947/cliargumentrouter/flag"
 )
-
 
 const (
 	debug logLevel = "debug"
@@ -15,7 +17,7 @@ const (
 
 type logLevel string
 
-type defaultRouter map[string]Handler
+type defaultRouter map[string]cmdrouter.Handler
 
 type defaultHandler struct{
 	helpMsg string
@@ -35,11 +37,11 @@ func NewDefaultRouter() defaultRouter {
 
 }
 
-func (d defaultRouter) Handle(path string, handler Handler) {
+func (d defaultRouter) Handle(path string, handler cmdrouter.Handler) {
 	d[path] = handler
 }
 
-func (d defaultRouter) findHandler(cmd string) Handler {
+func (d defaultRouter) findHandler(cmd string) cmdrouter.Handler {
 	for path := cmd; path != ""; {
 		if handler, ok := d[path]; ok {
 			return handler
@@ -57,12 +59,17 @@ func (d defaultRouter) findHandler(cmd string) Handler {
 }
 
 func (d defaultRouter) Run(cmd []string) {
+	flags := flag.GetDefaultFlags()
+	cmd, err := flags.Parse(cmd)
+	if err != nil {
+		log.Fatal(err)
+	}
 	path := strings.Join(cmd, " ")
 	handler := d.findHandler(path)
 	handler.Run(cmd)
 }
 
 func (d defaultRouter) HandleFunc(path string, fn func(cmd []string)) {
-	handler := RunnerFunc(fn)
+	handler := cmdrouter.RunnerFunc(fn)
 	d[path] = handler
 }

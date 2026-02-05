@@ -1,6 +1,6 @@
 package flag
 
-type flags interface {
-	parse(cmd []string) []string 
+type Flags interface {
+	Parse(cmd []string) ([]string, error)
 }
 
