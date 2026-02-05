@@ -59,14 +59,15 @@ func (d defaultRouter) findHandler(cmd string) cmdrouter.Handler {
 }
 
 func (d defaultRouter) Run(cmd []string) {
-	flags := flag.GetDefaultFlags()
-	cmd, err := flags.Parse(cmd)
+	flags := flag.DefaultFlags("--", "=", cmd)
+	err := flags.Parse()
 	if err != nil {
 		log.Fatal(err)
 	}
-	path := strings.Join(cmd, " ")
+	_, posargs := flags.Extract() // TODO: do something with kwargs, mb process help
+	path := strings.Join(posargs, " ")
 	handler := d.findHandler(path)
-	handler.Run(cmd)
+	handler.Run(posargs)
 }
 
 func (d defaultRouter) HandleFunc(path string, fn func(cmd []string)) {

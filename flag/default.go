@@ -4,6 +4,15 @@ import (
 	"fmt"
 )
 
+func DefaultFlags(prefix, nameValueSeparator string, posargs []string) defaultFlags {
+	return defaultFlags{
+		prefix: prefix, 
+		nameValueSeparator: nameValueSeparator, 
+		kwargs: kwargs{},
+		posargs: posargs,
+	}
+}
+
 func GetDefaultFlags() defaultFlags {
 	return defaultFlags{
 		prefix: "--",
@@ -17,6 +26,10 @@ type defaultFlags struct {
 	nameValueSeparator string
 	kwargs kwargs
 	posargs []string
+}
+
+func (d defaultFlags) Extract() (map[string][]struct{value string; position int}, []string) {
+	return d.kwargs.Publish(), d.posargs
 }
 
 func (d1 defaultFlags) isEqualTo(d2 defaultFlags) bool {
@@ -33,6 +46,18 @@ func (d1 defaultFlags) isEqualTo(d2 defaultFlags) bool {
 }
 
 type kwargs map[string][]pair
+
+func (k kwargs) Publish() map[string][]struct{value string; position int} {
+	newMap := map[string][]struct{value string; position int}{}
+	for k,v := range(k) {
+		list := []struct{value string; position int}{}
+		for _,v2 := range(v) {
+			list = append(list, struct{value string; position int}{value: v2.value, position: v2.position})
+		}
+		newMap[k] = list
+	}
+	return newMap
+}
 
 func (k1 kwargs) isEqualTo(k2 kwargs) bool {
 	for key1, value1 := range(k1) {
@@ -67,16 +92,17 @@ func (p1 pair) isEqualTo(p2 pair) bool {
 	return true
 }
 
-func (f *defaultFlags) Parse(cmd []string) error {
-	for k, v := range cmd {
+func (f *defaultFlags) Parse() error {
+	for k, v := range f.posargs{
 		prefix, body := sepToPrefixAndBody(v, (*f).prefix)
 		if prefix != (*f).prefix {
-			//f.posargs = cmd[k:]
-			return cmd[k:], nil // TODO: k or k+1
+			f.posargs = f.posargs[k:]// TODO: should i update it here, or higher, on every iteration ?
+			return nil 
 		}
 		fKey, fValue, err := sepToKeyAndValue(body, f.nameValueSeparator)
 		if err != nil {
-			return cmd[k:], fmt.Errorf("Parsing flags, got %w", err) // TODO: k or k+1
+			f.posargs = f.posargs[k:]// TODO: should i update it here, or higher, on every iteration ?
+			return fmt.Errorf("Parsing flags, got %w", err) // TODO: k or k+1
 		}
 		kwarg, kwargExists := (*f).kwargs[fKey]
 		flagPair := pair{
@@ -88,10 +114,15 @@ func (f *defaultFlags) Parse(cmd []string) error {
 		} else {
 			(*f).kwargs[fKey] = []pair{flagPair}} 
 	}
-	return []string{}, nil // TODO: k or k+1
+
+	f.posargs = []string{}// TODO: should i update it here, or higher, on every iteration ?
+	return  nil 
 }
 
 func sepToPrefixAndBody(flag, prefix string) (rPrefix, body string) {
+	if len(prefix) > len(flag) {
+		return "", flag
+	}
 	body = flag[len(prefix):]
 	rPrefix = flag[:len(prefix)]
 	return rPrefix, body
