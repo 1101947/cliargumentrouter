@@ -4,7 +4,8 @@ import (
 	"fmt"
 )
 
-func DefaultFlags(prefix, nameValueSeparator string, posargs []string) defaultFlags {
+
+func DefaultFlags(prefix, nameValueSeparator string, posargs posargs) defaultFlags {
 	return defaultFlags{
 		prefix: prefix, 
 		nameValueSeparator: nameValueSeparator, 
@@ -25,11 +26,11 @@ type defaultFlags struct {
 	prefix string
 	nameValueSeparator string
 	kwargs kwargs
-	posargs []string
+	posargs posargs 
 }
 
-func (d defaultFlags) Extract() (map[string][]struct{value string; position int}, []string) {
-	return d.kwargs.Publish(), d.posargs
+func (d defaultFlags) Extract() (kwargs, posargs) {
+	return d.kwargs, d.posargs
 }
 
 func (d1 defaultFlags) isEqualTo(d2 defaultFlags) bool {
@@ -39,58 +40,52 @@ func (d1 defaultFlags) isEqualTo(d2 defaultFlags) bool {
 	if d1.nameValueSeparator != d2.nameValueSeparator {
 		return false
 	}
-	if !d1.kwargs.isEqualTo(d2.kwargs) {
+	if !isEqual(d1.kwargs, d2.kwargs) {
 		return false
 	}
 	return true
 }
 
-type kwargs map[string][]pair
-
-func (k kwargs) Publish() map[string][]struct{value string; position int} {
-	newMap := map[string][]struct{value string; position int}{}
-	for k,v := range(k) {
-		list := []struct{value string; position int}{}
-		for _,v2 := range(v) {
-			list = append(list, struct{value string; position int}{value: v2.value, position: v2.position})
-		}
-		newMap[k] = list
-	}
-	return newMap
-}
-
-func (k1 kwargs) isEqualTo(k2 kwargs) bool {
-	for key1, value1 := range(k1) {
-		value2, ok := k2[key1] 
-		if !ok {
-			return false
-		}
-		if len(value2) != len(value1) {
-			return false
-		}
-		for i:=0;i<len(value1);i++ {
-			if !value2[i].isEqualTo(value1[i]) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-type pair struct{
-	value string
-	position int
-}
-
-func (p1 pair) isEqualTo(p2 pair) bool {
-	if p1.value != p2.value {
-		return false
-	}
-	if p1.position != p2.position {
-		return false
-	}
-	return true
-}
+//
+//func (k kwargs) Publish() map[string][]struct{value string; position int} {
+//	newMap := map[string][]struct{value string; position int}{}
+//	for k,v := range(k) {
+//		list := []struct{value string; position int}{}
+//		for _,v2 := range(v) {
+//			list = append(list, struct{value string; position int}{value: v2.value, position: v2.position})
+//		}
+//		newMap[k] = list
+//	}
+//	return newMap
+//}
+//
+//func (k1 kwargs) isEqualTo(k2 kwargs) bool {
+//	for key1, value1 := range(k1) {
+//		value2, ok := k2[key1] 
+//		if !ok {
+//			return false
+//		}
+//		if len(value2) != len(value1) {
+//			return false
+//		}
+//		for i:=0;i<len(value1);i++ {
+//			if !value2[i].isEqualTo(value1[i]) {
+//				return false
+//			}
+//		}
+//	}
+//	return true
+//}
+//
+//func (p1 pair) isEqualTo(p2 pair) bool {
+//	if p1.value != p2.value {
+//		return false
+//	}
+//	if p1.position != p2.position {
+//		return false
+//	}
+//	return true
+//}
 
 func (f *defaultFlags) Parse() error {
 	for k, v := range f.posargs{
@@ -104,17 +99,17 @@ func (f *defaultFlags) Parse() error {
 			f.posargs = f.posargs[k:]// TODO: should i update it here, or higher, on every iteration ?
 			return fmt.Errorf("Parsing flags, got %w", err) // TODO: k or k+1
 		}
-		kwarg, kwargExists := (*f).kwargs[fKey]
-		flagPair := pair{
-			value: fValue,
-			position: k,
-		}
+		_, kwargExists := (*f).kwargs[fKey]
+		//flagPair := pair{
+		//	value: fValue,
+		//	position: k,
+		//}
 		if kwargExists {
-			(*f).kwargs[fKey] = append(kwarg, flagPair)
+			(*f).kwargs[fKey][k] = fValue
 		} else {
-			(*f).kwargs[fKey] = []pair{flagPair}} 
+			(*f).kwargs[fKey] = map[int]string{k: fValue}
+		}
 	}
-
 	f.posargs = []string{}// TODO: should i update it here, or higher, on every iteration ?
 	return  nil 
 }
