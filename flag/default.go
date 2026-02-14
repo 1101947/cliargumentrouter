@@ -46,47 +46,6 @@ func (d1 defaultFlags) isEqualTo(d2 defaultFlags) bool {
 	return true
 }
 
-//
-//func (k kwargs) Publish() map[string][]struct{value string; position int} {
-//	newMap := map[string][]struct{value string; position int}{}
-//	for k,v := range(k) {
-//		list := []struct{value string; position int}{}
-//		for _,v2 := range(v) {
-//			list = append(list, struct{value string; position int}{value: v2.value, position: v2.position})
-//		}
-//		newMap[k] = list
-//	}
-//	return newMap
-//}
-//
-//func (k1 kwargs) isEqualTo(k2 kwargs) bool {
-//	for key1, value1 := range(k1) {
-//		value2, ok := k2[key1] 
-//		if !ok {
-//			return false
-//		}
-//		if len(value2) != len(value1) {
-//			return false
-//		}
-//		for i:=0;i<len(value1);i++ {
-//			if !value2[i].isEqualTo(value1[i]) {
-//				return false
-//			}
-//		}
-//	}
-//	return true
-//}
-//
-//func (p1 pair) isEqualTo(p2 pair) bool {
-//	if p1.value != p2.value {
-//		return false
-//	}
-//	if p1.position != p2.position {
-//		return false
-//	}
-//	return true
-//}
-
 func (f *defaultFlags) Parse() error {
 	for k, v := range f.posargs{
 		prefix, body := sepToPrefixAndBody(v, (*f).prefix)
