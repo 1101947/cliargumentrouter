@@ -1,22 +1,24 @@
 package cmdrouter
 
 import (
-	//"strings"
-	//"fmt"
 )
 
 type Handler interface {
-	Run(cmd []string)
+	Process(posargs []string) error
 }
 
-type RunnerFunc func(cmd []string)
+type ProcesserFunc func(posargs []string) error
 
-func (R RunnerFunc) Run(cmd []string) {
-	R(cmd)
+func (R ProcesserFunc) Process(posargs []string) error {
+	err := R(posargs)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type Router interface {
 	Handle(path string, handler Handler) 
-	HandleFunc(path string, fn func(cmd []string))
-	Run(cmd []string)
+	HandleFunc(path string, fn func(posargs []string) error)
+	Process(posargs []string) error
 }

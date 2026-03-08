@@ -13,8 +13,9 @@ type plainRouterHandler struct{
 	helpMsg string
 }
 
-func (d plainRouterHandler) Run(cmd []string) {
+func (d plainRouterHandler) Run(cmd []string) error {
 	fmt.Println(d.helpMsg)
+	return nil
 }
 
 
@@ -50,7 +51,7 @@ func (p plainRouter) Run(cmd []string) {
 	handler.Run(cmd)
 }
 
-func (p plainRouter) HandleFunc(path string, fn func(cmd []string)) {
+func (p plainRouter) HandleFunc(path string, fn func(cmd []string) error) {
 	handler := cmdrouter.RunnerFunc(fn)
 	p[path] = handler
 }

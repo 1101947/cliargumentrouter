@@ -8,21 +8,9 @@ import (
 	"github.com/1101947/cliargumentrouter/flag"
 )
 
-const (
-	debug logLevel = "debug"
-	info logLevel = "info"
-	warn logLevel = "warn"
-	erroR logLevel = "error"
-)
-
-type logLevel string
-
 type defaultRouter map[string]cmdrouter.Handler
 
 type defaultHandler struct{
-	helpMsg string
-	logLevel
-	dryRun bool
 }
 
 func (d defaultHandler) Run(cmd []string) error {
@@ -35,7 +23,6 @@ func NewDefaultRouter() defaultRouter {
 	router := defaultRouter{}
 	router[""] = defaultHandler{}
 	return router
-
 }
 
 func (d defaultRouter) Handle(path string, handler cmdrouter.Handler) {
@@ -55,8 +42,6 @@ func (d defaultRouter) findHandler(cmd string) cmdrouter.Handler {
 		}
 	}
 	return d[""]
-
-
 }
 
 func (d defaultRouter) Run(cmd []string) {
