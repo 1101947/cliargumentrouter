@@ -19,12 +19,13 @@ func (R ProcesserFunc) Process(posargs []string) error {
 
 //type DRouter map[string]Handler 
 //
-//
 //func (D DRouter) Handle(posargs []string, H Handler) error {
 //}
 //
 //func (D DRouter) HandleFunc(path []string, PF ProcesserFunc) error {
 //}
+//
+//type HandlerFunc func(Router map[string]Handler, posargs []string, H Handler)
 //
 //func (D DRouter) Process(posargs []string) error {
 //	flags := flag.DefaultFlags("--", "=", posargs)

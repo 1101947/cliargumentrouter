@@ -6,12 +6,13 @@ import (
 
 
 func DefaultFlags(prefix, nameValueSeparator string, posargs posargs) defaultFlags {
-	return defaultFlags{
+	d := defaultFlags{
 		prefix: prefix, 
 		nameValueSeparator: nameValueSeparator, 
 		kwargs: kwargs{},
 		posargs: posargs,
 	}
+	return d
 }
 
 func GetDefaultFlags() defaultFlags {
