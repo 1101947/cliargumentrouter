@@ -10,4 +10,6 @@ This project is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1
 ## [Current]
 ### Changed
 - Now handler returns cmd.Cmd(interface with methods Exec and Update) and error instead of just error.
+### Added
+- CHANGELOG.md
 
