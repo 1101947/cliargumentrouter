@@ -1,7 +1,7 @@
 package cmdrouter
 
 import (
-	"cliargumentrouter/cmd"
+	"github.com/1101947/cliargumentrouter/cmd"
 )
 
 type Handler interface {
