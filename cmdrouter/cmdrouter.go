@@ -1,42 +1,20 @@
 package cmdrouter
 
 import (
+	"cliargumentrouter/cmd"
 )
 
 type Handler interface {
-	Process(posargs []string) error
+	Process(posargs []string) (cmd.Cmd, error)
 }
 
-type ProcesserFunc func(posargs []string) error
+type ProcesserFunc func(posargs []string) (cmd.Cmd, error)
 
-func (R ProcesserFunc) Process(posargs []string) error {
-	err := R(posargs)
+func (R ProcesserFunc) Process(posargs []string) (cmd.Cmd, error) {
+	cmd, err := R(posargs)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return cmd, nil
 }
-
-//type DRouter map[string]Handler 
-//
-//func (D DRouter) Handle(posargs []string, H Handler) error {
-//}
-//
-//func (D DRouter) HandleFunc(path []string, PF ProcesserFunc) error {
-//}
-//
-//type HandlerFunc func(Router map[string]Handler, posargs []string, H Handler)
-//
-//func (D DRouter) Process(posargs []string) error {
-//	flags := flag.DefaultFlags("--", "=", posargs)
-//	err := flags.Parse()
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	_, posargs := flags.Extract() // TODO: do something with kwargs, mb process help
-//	path := strings.Join(posargs, " ")
-//	handler := d.findHandler(path)
-//	handler.Run(posargs)
-//}
-
 
