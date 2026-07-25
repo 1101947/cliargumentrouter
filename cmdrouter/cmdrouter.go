@@ -17,4 +17,3 @@ func (R ProcesserFunc) Process(posargs []string) (cmd.Cmd, error) {
 	}
 	return cmd, nil
 }
-
