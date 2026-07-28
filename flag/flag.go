@@ -1,5 +1,9 @@
 package flag
 
+import (
+	"fmt"
+)
+
 func NotRequired() string {
 	return "Flag is not required"
 }
@@ -13,18 +17,59 @@ func FlagsNotParsed() flagsStatus {
 }
 
 func GetFlags() flags {
-	return flags{}
+	return flags{
+		aliasesToSetters: map[string]setter{},
+		namesToFlagsPointers: map[string]*flag{},
+	}
 }
 
-func (f flags) Add(F Flag) error {
+func (f flags) Add(F FlagDescription) (*flag, error) {
+	for _,alias := range(F.Aliases) {
+		if alias == F.Name {
+			return nil, fmt.Errorf("Name and alias matches: %s . Name and alias should not match", alias)
+		}
+		if _, ok := f.aliasesToSetters[alias]; ok {
+			fl, err := f.findFlagByAlias(alias)
+			if err != nil {
+				return nil, fmt.Errorf("Trying to find flag by alias, got: %w", err)
+			}
+			return nil, fmt.Errorf("Alias: '%s' is already in use by %s flag", alias, fl)
+		} 
+	}
+	if _, ok := f.namesToFlagsPointers[F.Name]; ok {
+		return nil, fmt.Errorf("Name is already in use")
+	}
+	constructedFlag := constructFlag(F)
+	f.namesToFlagsPointers[F.Name] = constructedFlag 
+	// TODO
+	setter := setter{ flag: constructedFlag, }
+	for _,alias := range(F.Aliases) {
+		f.aliasesToSetters[alias] = setter
+	}
+	return constructedFlag, nil
+}
+
+type setter struct {
+	flag *flag
+}
+
+func (s setter) Set(v string) error {
+	if s.flag.isSet {
+		return fmt.Errorf("Flag: %s has already been set.", s.flag.name)
+	}
+	// TODO: set
+	s.flag.value = v
+	s.flag.isSet = true
 	return nil
 }
 
-type Flag struct {
+type FlagDescription struct {
 	Name string
 	Aliases []string
 	IsRequired bool
-	ValueSpecificationStatus valueSpecificationStatus // value specification is required / value specification is forbiden / value specification is optional
+	// value specification is required / value specification is forbiden / value specification is optional
+	ValueSpecificationStatus valueSpecificationStatus 	
+	Description string
 	DefaultValue string
 }
 
@@ -42,11 +87,6 @@ func ValueSpecificationIsOptional() valueSpecificationStatus {
 	return valueSpecificationStatus("valueSpecificationIsOptional")
 }
 
-
-func (f flags) AddFlag(flagName, requirementStatus string, aliases []string) error {
-	return nil
-}
-
 func (f flags) Parse(p []string) {
 }
 
@@ -57,7 +97,7 @@ type FlagStatus struct {
 
 //: isSet/isNotSet, valued/keyOnly/optional, assignedWithValue/NotAssignedWithValue
 
-func (f flags) Get(fName string) (string, FlagStatus, error) {
+func (f flag) Get() (string, FlagStatus, error) {
 	return "", FlagStatus{}, nil 
 }
 
@@ -70,9 +110,50 @@ func (f flags) Status() flagsStatus {
 	return FlagsNotParsed()
 }
 
+func (f flags) findFlagByAlias(a string) (string, error) {
+	for name, val := range(f.namesToFlagsPointers) {
+		for _, alias := range(val.aliases) {
+			if a == alias {
+				return name, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("No flags have alias: %s", a)
+}
+
+
 type flags struct {
+	aliasesToSetters map[string]setter
+	namesToFlagsPointers map[string]*flag
 	//optional []flag
 	//required []flag
+}
+
+func constructFlag(F FlagDescription) *flag {
+	f := flag{
+		name: F.Name,
+		aliases: F.Aliases,
+		value: F.DefaultValue,
+		description: F.Description,
+		isRequired: F.IsRequired,
+		valueSpecificationStatus: F.ValueSpecificationStatus,
+		isSet: false,
+		isAssignedWithValue: false,
+		isRead: false,
+	}
+	return &f
+} 
+
+type flag struct {
+	name string
+	aliases []string
+	value string
+	description string
+	valueSpecificationStatus valueSpecificationStatus
+	isRequired bool
+	isSet bool
+	isAssignedWithValue bool
+	isRead bool
 }
 
 type flagsStatus string 

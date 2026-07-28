@@ -4,29 +4,35 @@ import (
 	"testing"
 )
 
+// TO GET: 
+// ERRORS:
+// flag is already added
+// alias is already in use
+// unknown flag
+// required flag wasnt specified
+// flags value wasnt specified
+// flags value was specified
+// not all flags were read
+// required flags were not read
+// non required flags were not read
 func TestFlags(t *testing.T) {
 	//args := []string{"--flag", "--flag2=value", "--(flag3=val3 flag4)", "( flag5 flag6=val6 )", "posarg"}
-	args := []string{"--flag", "--flag2=value"}
+	args := []string{"--flag2=value"}
 	flags := GetFlags()
-	err := flags.AddFlag("flag", NotRequired(), []string{"flag", "fl"})
-	if err != nil {
-		t.Fatal("Adding flag: flag", "got: ", err)
-	} 
-	secondFlag := Flag{
+	secondFlagDesc := FlagDescription{
 		Name: "flag2",
-		Aliases: []string{"flag2", "fl2"},
+		Aliases: []string{"fl2"},
 		IsRequired: false,
+		ValueSpecificationStatus: ValueSpecificationIsRequired(),
+		Description: "just a flag",
+		DefaultValue: "",
 	}
-	err = flags.Add(secondFlag)
+	secondFlag, err := flags.Add(secondFlagDesc)
 	if err != nil {
-		t.Fatal("Adding flag ", secondFlag, " got: ", err)
+		t.Fatal("Adding flag ", secondFlagDesc, " got: ", err)
 	}
 	flags.Parse(args)
-	sValFl1, status1, err := flags.Get("flag")
-	if err != nil {
-		t.Fatal("Getting flag with status: ", status1, " got: ", err)
-	}
-	sValFl2, status, err := flags.Get("flag2")
+	sValFl2, status, err := secondFlag.Get()
 	if err != nil {
 		t.Fatal("Getting flag with status: ", status, " got: ", err)
 	}
@@ -34,7 +40,7 @@ func TestFlags(t *testing.T) {
 	if flagsStatus != Parsed() {
 		t.Fatal("Flags weren't parsed: ", string(flagsStatus))
 	}
-	if !(status1.IsSet && sValFl2 == "value") {
-		t.Fatal("Parsed flags wrong.:  ", sValFl1, sValFl2)
+	if !(sValFl2 == "value") {
+		t.Fatal("Parsed flags wrong.:  ", sValFl2)
 	}
 } 
