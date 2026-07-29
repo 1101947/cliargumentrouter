@@ -8,6 +8,9 @@ This project is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1
 
 ## [Unreleased]
 ## [Current]
+### Added
+- Flags interface
+## [2026-07-29_16-59-16Z__bbf56b8d75ee0fd05f8c6a1246e92979b3c5f0d5]
 ### Changed
 - Rewrote flag package almost completly
 - Added flags type on which Add(to add flag), Parse(to parse cli into \*flag type objects) and Status(to get flags status: parsed/read) are called

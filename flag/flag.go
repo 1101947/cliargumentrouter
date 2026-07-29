@@ -144,6 +144,7 @@ type FlagValue struct {
 }
 
 func (f flags) Status() flagsStatus {
+	// TODO: calculate status instead of just reading f.status.
 	return f.status 
 }
 
@@ -165,6 +166,12 @@ type flags struct {
 	namesToFlagsPointers map[string]*flag
 	//optional []flag
 	//required []flag
+}
+
+type Flags interface {
+	Add(FlagDescription) (*flag, error)
+	Parse([]string) (int, error)
+	Status() flagsStatus
 }
 
 func constructFlag(F FlagDescription) (*flag, error) {
