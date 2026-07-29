@@ -20,18 +20,20 @@ func TestFlags(t *testing.T) {
 	args := []string{"--flag2=value"}
 	flags := GetFlags()
 	secondFlagDesc := FlagDescription{
-		Name: "flag2",
-		Aliases: []string{"fl2"},
+		Names: []string{"flag2", "fl2"},
 		IsRequired: false,
 		ValueSpecificationStatus: ValueSpecificationIsRequired(),
 		Description: "just a flag",
 		DefaultValue: "",
 	}
-	secondFlag, err := flags.Add(secondFlagDesc)
+	secondFlag, err := (&flags).Add(secondFlagDesc)
 	if err != nil {
 		t.Fatal("Adding flag ", secondFlagDesc, " got: ", err)
 	}
-	flags.Parse(args)
+	position, err := (&flags).Parse(args)
+	if err != nil {
+		t.Fatal("Parsed: ", position, "  , got: ", err)
+	}
 	sValFl2, status, err := secondFlag.Get()
 	if err != nil {
 		t.Fatal("Getting flag with status: ", status, " got: ", err)
@@ -41,6 +43,6 @@ func TestFlags(t *testing.T) {
 		t.Fatal("Flags weren't parsed: ", string(flagsStatus))
 	}
 	if !(sValFl2 == "value") {
-		t.Fatal("Parsed flags wrong.:  ", sValFl2)
+		t.Fatal("Parsed flags wrong:  ", sValFl2)
 	}
 } 
