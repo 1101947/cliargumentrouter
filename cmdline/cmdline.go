@@ -31,6 +31,7 @@ func Parse(args []string) ([]Arg, error) {
 			return pArgs, fmt.Errorf("Invalid syntax, got: %s", invalidFlag)
 		}
 		if len(arg) <= 2 || (len(arg) > 2 && arg[:2] != prefix) {
+
 			currParg = Arg{
 				Name: arg,
 				Flags: map[string]string{},
@@ -38,7 +39,7 @@ func Parse(args []string) ([]Arg, error) {
 			pArgs = append(pArgs, currParg)
 			continue
 		}
-		key = arg[:2]
+		key = arg[2:]
 		val = ""
 		for i,char := range(arg) {
 			if char == keyValSep {

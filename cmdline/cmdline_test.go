@@ -55,7 +55,7 @@ func TestParse(t *testing.T) {
 		for k,val := range(root.Flags) {
 			orVal, ok := v.originalFlags[k]
 			if !ok && v.shouldPass  {
-				t.Fatal("Didn't find flag. Original flags: ", v.originalFlags, "parsed: ", root.Flags)
+				t.Fatal("Didn't find flag: ", k, " Original flags: ", v.originalFlags, " posargs: ", v.posargs, "parsed: ", root.Flags, " Should be passing: ", v.shouldPass)
 			}
 			if val != orVal {
 				t.Fatal("Different values.")
