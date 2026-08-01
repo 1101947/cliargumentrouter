@@ -2,11 +2,11 @@ package flagreader
 
 import (
 	"fmt"
+	"errors"
 )
 
-func NoFlagWihtThisNameWasFound() error {
-	return fmt.Errorf("No flag with this name was found.")
-
+func NoFlagWithThisNameWasFound() error {
+	return errors.New("No flag with this name was found.")
 }
 
 func GetFlags(kwargs map[string]string) flags {
@@ -29,7 +29,12 @@ type valueContainer struct {
 	haveBeenRead bool
 }
 
-func (f flags) AllFlagsHaveBeenRead() bool {
+type Flags interface {
+	AllFlagsHaveBeenRead() (bool, []string)
+	ReadValueOf(string) (string, error)
+}
+
+func (f flags) AllFlagsHaveBeenRead() (bool, []string) {
 	flagsNames := []string{}
 	for name, value := range(f) {
 		if !value.haveBeenRead {
@@ -37,9 +42,9 @@ func (f flags) AllFlagsHaveBeenRead() bool {
 		}
 	}
 	if len(flagsNames) > 0 {
-		return false 
+		return false, flagsNames
 	}
-	return true
+	return true, nil
 }
 
 func (f flags) ReadValueOf(name string) (string, error) {

@@ -20,10 +20,10 @@ func TestFlagsShouldPass(t *testing.T) {
 	}
 	if value != "~/.config/app" {
 		t.Fatal("Got value: ", value,  "but expected: ~/.config/app")
-
 	}
-	if !fls.AllFlagsHaveBeenRead() {
-		t.Fatal("Not all flags have been read !")
+	haveBeenRead, flagnamesThatHavent := fls.AllFlagsHaveBeenRead()
+	if !haveBeenRead {
+		t.Fatal("Not all flags have been read !: ", flagnamesThatHavent)
 	}
 } 
 

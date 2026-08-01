@@ -1,8 +1,14 @@
 package noname_flagcontroller
 
+import (
+		"github.com/1101947/cliargumentrouter/flagreader"
+		"fmt"
+		//"errors"
+)
+
 // flagdescriber
 
-type FlagDescription struct {
+type Flag struct {
 	Names []string
 	IsRequired bool
 	Description string
@@ -20,8 +26,8 @@ type flag struct {
 func GetFlags(kwargs map[string]string) flags {
 	fl := flagreader.GetFlags(kwargs)
 	f := flags{
-		registeredNames: map[string]*FlagDescription{},
-		registeredFlags: map[string]*FlagDescription{},
+		registeredNames: map[string]*flag{},
+		registeredFlags: map[string]*flag{},
 		flagS: fl,
 	}
 	return f
@@ -30,14 +36,14 @@ func GetFlags(kwargs map[string]string) flags {
 type flags struct {
 	registeredNames map[string]*flag
 	registeredFlags map[string]*flag
-	flagS flagreader.flags
+	flagS flagreader.Flags
 }
 
 // TODO: should i take Flag or *Flag ?
-func (f *flags) Register(F Flag) (string, error) {
+func (f *flags) Register(F Flag) error {
 	for _,name := range(F.Names) {
 		if fl, ok := f.registeredNames[name]; ok {
-			return fmt.Errorf("Name: %s have already been used by flag: %s", name, fl.Name[0])
+			return fmt.Errorf("Name: %s have already been used by other flag:", fl.names[0])
 		}
 	}
 	if _, ok := f.registeredFlags[F.Names[0]]; ok {
@@ -50,9 +56,9 @@ func (f *flags) Register(F Flag) (string, error) {
 		description: F.Description, 
 		defaultValue: F.DefaultValue, 
 	}
-	f.registeredFlags[F.Names[0]] = *fl
+	f.registeredFlags[F.Names[0]] = &fl
 	for _, name := range(F.Names) {
-		f.registeredNames[name] = *fl
+		f.registeredNames[name] = &fl
 	}
 	return nil
 }
@@ -62,24 +68,30 @@ func (f *flags) GetValueOf(name string) (string, error) {
 	if !ok {
 		return p.defaultValue, fmt.Errorf("Flag with this name wasn't registered.")
 	}
-	value := p.defaultValue 
 	var err error
 	counter := 0
+	value := p.defaultValue 
+	iterValue := ""
+
 	for _, name := range(p.names) {
-		value, err = f.flagS.ReadValueOf(name)
-		if !errors.Is(err, flagreader.NoFlagWithThisNameWasFound()) {
+		iterValue, err = f.flagS.ReadValueOf(name)
+		if err != nil && err.Error() == flagreader.NoFlagWithThisNameWasFound().Error() {
+			err = nil
 			continue
 		}
+		//if errors.Is(err, flagreader.NoFlagWithThisNameWasFound()) {
+		//}
 		if err != nil {
 			return value, fmt.Errorf("Searching for flag, got: %w", err)
 		}
 		counter++
+		value = iterValue
 	}
 	if counter > 1 {
 		return value, fmt.Errorf("Found several identical flags with different aliases.")
 	}
 	if counter == 0 {
-		if p.IsRequired {
+		if p.isRequired {
 			return p.defaultValue, fmt.Errorf("Flag is required to be specified, but haven't found it.")
 		}
 	}
@@ -87,11 +99,19 @@ func (f *flags) GetValueOf(name string) (string, error) {
 }
 
 
-func (f *flags) HaveReadAll() bool {
+func (f flags) HaveReadAll() (bool, map[string]string) {
+	notReadenFlags := map[string]string{}
 	for name,p := range(f.registeredFlags) {
 		if p.isRequired && !p.haveBeenRead {
-			return false
+			notReadenFlags[name] = "required, but not readen." 
 		}
 	} 
-	return f.flagS.AllFlagsHaveBeenRead()
+	ok, specifiedButNotReaden := f.flagS.AllFlagsHaveBeenRead()
+	for _, flagname := range(specifiedButNotReaden) {
+		notReadenFlags[flagname] = "specified, but not readen"
+	}
+	if len(notReadenFlags) == 0 && ok {
+		return true, notReadenFlags 
+	}
+	return false, notReadenFlags 
 }
