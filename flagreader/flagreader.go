@@ -2,11 +2,15 @@ package flagreader
 
 import (
 	"fmt"
-	"errors"
 )
+type noFlagWithThisNameWasFound string
 
-func NoFlagWithThisNameWasFound() error {
-	return errors.New("No flag with this name was found.")
+func (n noFlagWithThisNameWasFound) Error() string {
+	return string(n)
+}
+
+func NoFlagWithThisNameWasFound() noFlagWithThisNameWasFound {
+	return  noFlagWithThisNameWasFound("No flag with this name was found.")
 }
 
 func GetFlags(kwargs map[string]string) flags {

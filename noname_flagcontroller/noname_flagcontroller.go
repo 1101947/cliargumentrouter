@@ -3,7 +3,7 @@ package noname_flagcontroller
 import (
 		"github.com/1101947/cliargumentrouter/flagreader"
 		"fmt"
-		//"errors"
+		"errors"
 )
 
 // flagdescriber
@@ -75,12 +75,15 @@ func (f *flags) GetValueOf(name string) (string, error) {
 
 	for _, name := range(p.names) {
 		iterValue, err = f.flagS.ReadValueOf(name)
-		if err != nil && err.Error() == flagreader.NoFlagWithThisNameWasFound().Error() {
+		if errors.Is(err, flagreader.NoFlagWithThisNameWasFound()) {
 			err = nil
 			continue
 		}
-		//if errors.Is(err, flagreader.NoFlagWithThisNameWasFound()) {
-		//}
+//		if err != nil && err.Error() == flagreader.NoFlagWithThisNameWasFound().Error() {
+//			err = nil
+//			continue
+//		}
+
 		if err != nil {
 			return value, fmt.Errorf("Searching for flag, got: %w", err)
 		}
