@@ -1,4 +1,4 @@
-package noname_flagcontroller 
+package flagcontroller 
 
 import (
 	"testing"

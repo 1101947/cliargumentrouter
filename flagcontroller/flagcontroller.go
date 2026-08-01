@@ -1,4 +1,4 @@
-package noname_flagcontroller
+package flagcontroller
 
 import (
 		"github.com/1101947/cliargumentrouter/flagreader"
