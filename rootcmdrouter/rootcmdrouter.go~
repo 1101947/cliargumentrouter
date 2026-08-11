@@ -1,0 +1,30 @@
+package rootcmdrouter 
+
+import (
+
+	"github.com/1101947/cliargumentrouter/cmdrouter"
+)
+
+func HandlerWithThisNameAlreadyExists() handlerWithThisNameAlreadyExists {
+	return handlerWithThisNameAlreadyExists("Handler with this name already exist.")
+}
+
+
+func NewRouter() RootCmdRouter {
+	return RootCmdRouter{
+		sourceToParse: "",
+		routes: defaultRoutes(),
+	}
+}
+
+type RootCmdRouter struct {
+	sourceToParse
+	routes map[string]cmdrouter.Handler
+}
+
+func (R RootCmdRouter) Add(name string, handler cmdrouter.Handler) error {
+	if _, ok := R.routes[name]; ok {
+		return HandlerWithThisNameAlreadyExists()
+	}
+} 
+

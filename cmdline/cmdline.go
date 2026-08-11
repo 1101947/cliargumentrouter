@@ -4,40 +4,43 @@ import (
 	"fmt"
 )
 
-type Arg struct {
+type Cmd struct {
 	Name string
 	Flags map[string]string
 }
 // Everything that starts with -- is a flag
 // Everything that doesn start with -- is a positional argument
 // -- --= --KEY= are invalid flags
-func Parse(args []string) ([]Arg, error) {
+// Takes cli arguments as array of strings and parses them starting with offset to command and its flags until new command is found, then returns parsed command and offset to cli arguments.
+func Parse(args []string, offset int) (Cmd, int, error) {
 	prefix := "--"
 	keyValSep := '='
 	invalidFlag := prefix + string(keyValSep)
 	var key string
 	var val string
-	RootCmd := Arg{
-		Name: "root",
-		Flags: map[string]string{},
+	cmd := Cmd{}
+	cmd.Falgs = map[string]string{}
+	if offset < 0 {
+		return fmt.Errorf("Offset is a negative number. Offset must not be a negative number. Offset must be a positive number or zero.")
+	} else if offset == 0 {
+		cmd.Name = "root",
+	} else {
+		// TODO: offset vs offset + 1
+		cmd.Name = args[offset] 
+		offset++
 	}
-	pArgs := []Arg{RootCmd}
-	var currParg Arg
-	for _, arg := range(args) {
+	var arg string
+	for i:=offset;i<len(args);i++ {
+		arg = args[i]
 		if len(arg) == 2 && arg == prefix {
-			return pArgs, fmt.Errorf("Invalid syntax, got: %s", prefix)
+			return cmd, offset, fmt.Errorf("Invalid syntax, got: %s", prefix)
 		}
 		if len(arg) == 3 && arg == invalidFlag {
-			return pArgs, fmt.Errorf("Invalid syntax, got: %s", invalidFlag)
+			return cmd, offset, fmt.Errorf("Invalid syntax, got: %s", invalidFlag)
 		}
 		if len(arg) <= 2 || (len(arg) > 2 && arg[:2] != prefix) {
-
-			currParg = Arg{
-				Name: arg,
-				Flags: map[string]string{},
-			}
-			pArgs = append(pArgs, currParg)
-			continue
+			// TODO: or break ?
+			return cmd, offset, nil 
 		}
 		key = arg[2:]
 		val = ""
@@ -46,15 +49,16 @@ func Parse(args []string) ([]Arg, error) {
 				key = arg[2:i]
 				val = arg[i+1:]
 				if len(val) <= 0 {
-					return pArgs, fmt.Errorf("Syntax error: Invalid flag syntax: --flag= . If flag specified with = symbol, value must be provided(inserted after =, like --flag=value.")
+					return cmd, offset, fmt.Errorf("Syntax error: Invalid flag syntax: --flag= . If flag specified with = symbol, value must be provided(inserted after =, like --flag=value.")
 				}
 				break
 			}
 		}
-		if _, ok := pArgs[len(pArgs)-1].Flags[key]; ok {
-			return pArgs, fmt.Errorf("This command already have flag with this key assigned: %s", key)
+		if _, ok := cmd.Flags[key]; ok {
+			return cmd, offset, fmt.Errorf("This command already have flag with this key assigned: %s", key)
 		}
-		(pArgs[len(pArgs)-1]).Flags[key] = val  
+		cmd.Flags[key] = val
 	}
-	return pArgs, nil 
+	return cmd, offset, nil
 }
+

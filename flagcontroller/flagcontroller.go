@@ -63,6 +63,7 @@ func (f *flags) Register(F Flag) error {
 	return nil
 }
 
+// TODO: return pointer to string
 func (f *flags) GetValueOf(name string) (string, error) {
 	p, ok := f.registeredFlags[name]
 	if !ok {

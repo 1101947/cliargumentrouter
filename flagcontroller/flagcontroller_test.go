@@ -23,7 +23,7 @@ func TestFlagsShouldPass(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error registering flag.", err)
 	}
-	flagValue, err := fls.GetValueOf("config")
+	flagValue, err := fls.GetValueOf(config.Names[0])
 	if err != nil {
 		t.Fatal("Getting value of flag, expected value, got error: ", err)
 	}

@@ -1,19 +1,19 @@
 package cmdrouter
 
 import (
-	"github.com/1101947/cliargumentrouter/cmd"
+	"github.com/1101947/cliargumentrouter/executor"
 )
 
 type Handler interface {
-	Process(posargs []string) (cmd.Cmd, error)
+	Process(posargs []string) (executor.Executor, error)
 }
 
-type ProcesserFunc func(posargs []string) (cmd.Cmd, error)
+type ProcesserFunc func(posargs []string) (executor.Executor, error)
 
-func (R ProcesserFunc) Process(posargs []string) (cmd.Cmd, error) {
-	cmd, err := R(posargs)
+func (R ProcesserFunc) Process(posargs []string) (executor.Executor, error) {
+	exec, err := R(posargs)
 	if err != nil {
 		return nil, err
 	}
-	return cmd, nil
+	return exec, nil
 }
