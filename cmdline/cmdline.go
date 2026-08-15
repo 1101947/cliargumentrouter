@@ -12,26 +12,27 @@ type Cmd struct {
 // Everything that doesn start with -- is a positional argument
 // -- --= --KEY= are invalid flags
 // Takes cli arguments as array of strings and parses them starting with offset to command and its flags until new command is found, then returns parsed command and offset to cli arguments.
-func Parse(args []string, offset int) (Cmd, int, error) {
+func Serialize(args []string, offset int) (Cmd, int, error) {
 	prefix := "--"
 	keyValSep := '='
 	invalidFlag := prefix + string(keyValSep)
 	var key string
 	var val string
 	cmd := Cmd{}
-	cmd.Falgs = map[string]string{}
+	cmd.Flags = map[string]string{}
 	if offset < 0 {
-		return fmt.Errorf("Offset is a negative number. Offset must not be a negative number. Offset must be a positive number or zero.")
+		return cmd, offset, fmt.Errorf("Offset is a negative number. Offset must not be a negative number. Offset must be a positive number or zero.")
 	} else if offset == 0 {
-		cmd.Name = "root",
+		cmd.Name = "root"
 	} else {
 		// TODO: offset vs offset + 1
 		cmd.Name = args[offset] 
 		offset++
 	}
 	var arg string
-	for i:=offset;i<len(args);i++ {
-		arg = args[i]
+	for o:=offset;o<len(args);o++ {
+		offset = o 
+		arg = args[offset]
 		if len(arg) == 2 && arg == prefix {
 			return cmd, offset, fmt.Errorf("Invalid syntax, got: %s", prefix)
 		}
@@ -61,4 +62,3 @@ func Parse(args []string, offset int) (Cmd, int, error) {
 	}
 	return cmd, offset, nil
 }
-

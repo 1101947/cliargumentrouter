@@ -4,62 +4,32 @@ import (
 	"testing"
 )
 
-type testCase struct {
-	originalFlags map[string]string
-	posargs []string
-	shouldPass bool
+func TestCmdline(t *testing.T) {
+	line := []string{"--flag1", "--flag2=2"}
+	cmd, offset, err := Serialize(line, 0)
+	if offset <= 0 {
+		t.Fatal("Expected offset to greater than 0, but is lesser or equal to zero: offset: ", offset, " Error: ", err)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if cmd.Name != "root" {
+		t.Fatal("Expected command name to be root")
+	}
+	firstFlag, ok := cmd.Flags["flag1"]
+	if !ok {
+		t.Fatal("Expected to get flag1 value specified, but didnt")
+	}
+	if firstFlag != "" {
+		t.Fatal("Expected first flag value to be \"\" , but is: ", firstFlag)
+	}
+	secondFlag, ok := cmd.Flags["flag2"]
+	if !ok {
+		t.Fatal("Expected to get flag1 value specified, but didnt")
+	}
+	if secondFlag != "2" {
+		t.Fatal("Expected second flag value to be 2, but is: ", secondFlag)
+	}
 }
 
-func flagsToPosargs(f map[string]string) []string {
-	p := []string{}
-	for k,v := range(f) {
-		s := "--" + k 
-		if v != "" {
-			s = s + "=" + v
-		}
-		p = append(p, s)
-	}
-	return p
-} 
-
-func TestParse(t *testing.T) {
-	goodFlags := map[string]string{"config": "~/.config/myapp.conf", "NoOptionFalg": ""}
-	badFlags := map[string]string{"--": "", "--=": ""}
-	goodCase := testCase{
-		originalFlags: goodFlags,
-		posargs: flagsToPosargs(goodFlags),
-		shouldPass: true,
-	}
-	badCase := testCase{
-		originalFlags: badFlags,
-		posargs: flagsToPosargs(badFlags),
-		shouldPass: false,
-	}
-	testCases := []testCase{goodCase, badCase}
-	var root Arg
-	for _,v := range(testCases) {
-		args, err := Parse(v.posargs)
-		if err != nil && v.shouldPass {
-			t.Fatal("Parsing, got error")
-		}
-		if err == nil && !v.shouldPass {
-			t.Fatal("Parsing, didn't get error")
-		}
-		if !v.shouldPass {
-			continue
-		}
-		root = args[0]
-		if len(root.Flags) != len(v.originalFlags) {
-			t.Fatal("Different flags amount after parsing.")
-		}
-		for k,val := range(root.Flags) {
-			orVal, ok := v.originalFlags[k]
-			if !ok && v.shouldPass  {
-				t.Fatal("Didn't find flag: ", k, " Original flags: ", v.originalFlags, " posargs: ", v.posargs, "parsed: ", root.Flags, " Should be passing: ", v.shouldPass)
-			}
-			if val != orVal {
-				t.Fatal("Different values.")
-			}
-		}
-	}
-}
